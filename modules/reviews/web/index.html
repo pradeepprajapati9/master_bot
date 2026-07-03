@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⭐ Reviews Bot • Master Bot</title>
+  <style>
+    :root{ --bg:#0b0d12; --card:#151922; --line:#252b38; --txt:#e8eaf0; --mut:#8b93a7; --grn:#26c281; --red:#f0554b; --blu:#4f7cff; --amb:#f5a623; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--txt); }
+    header{ padding:16px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
+    header .logo{ font-weight:800; } header .logo span{ color:var(--blu); }
+    header a{ color:var(--mut); text-decoration:none; font-size:13px; }
+    header .who{ margin-left:auto; color:var(--mut); font-size:13px; }
+    .wrap{ max-width:760px; margin:0 auto; padding:26px 22px; }
+    h1{ font-size:22px; margin:0 0 2px; } .sub{ color:var(--mut); font-size:13px; margin-bottom:22px; }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin-bottom:18px; }
+    .card h3{ margin:0 0 14px; font-size:16px; }
+    label{ display:block; font-size:12px; color:var(--mut); margin:14px 0 6px; }
+    input,select,textarea{ width:100%; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:#0e1219; color:var(--txt); font-size:14px; font-family:inherit; }
+    .row{ display:flex; gap:14px; } .row > div{ flex:1; }
+    .toggle{ display:flex; align-items:center; gap:10px; margin-top:16px; }
+    .toggle input{ width:auto; }
+    .btn{ margin-top:18px; padding:11px 18px; border:none; border-radius:10px; background:var(--blu); color:#fff; font-weight:600; cursor:pointer; }
+    .btn.ghost{ background:#0e1219; border:1px solid var(--line); color:var(--txt); }
+    .pill{ display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+    .pill.on{ background:rgba(38,194,129,.16); color:var(--grn); } .pill.off{ background:rgba(245,166,35,.16); color:var(--amb); }
+    .logrow{ border-bottom:1px solid var(--line); padding:12px 0; font-size:13px; }
+    .logrow:last-child{ border:none; }
+    .stars{ color:var(--amb); } .reply{ color:var(--mut); margin-top:4px; }
+    .center{ min-height:70vh; display:flex; align-items:center; justify-content:center; text-align:center; }
+    .muted{ color:var(--mut); font-size:13px; }
+    .toast{ position:fixed; bottom:20px; right:20px; background:var(--grn); color:#04210f; padding:10px 16px; border-radius:9px; font-weight:600; opacity:0; transition:.2s; }
+    .toast.show{ opacity:1; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">⭐ Reviews<span>Bot</span></div>
+    <a href="../../../user/">← Back to bots</a>
+    <div class="who" id="who"></div>
+  </header>
+
+  <!-- LOCKED / NOT LOGGED IN -->
+  <div class="center" id="lockView" style="display:none">
+    <div class="card" style="max-width:360px">
+      <h3 id="lockTitle">🔒 Locked</h3>
+      <p class="muted" id="lockMsg"></p>
+      <a class="btn" href="../../../user/" style="display:inline-block;text-decoration:none">Go back</a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="wrap" id="mainView" style="display:none">
+    <h1>⭐ Reviews Bot</h1>
+    <div class="sub">Google reviews ka auto polite reply — set it once, bot handles the rest.</div>
+
+    <!-- connection -->
+    <div class="card">
+      <h3>Google Business connection</h3>
+      <div id="connStatus" class="muted">Checking…</div>
+      <button class="btn ghost" id="connectBtn" style="margin-top:14px">🔗 Connect Google Business</button>
+      <div class="muted" style="margin-top:10px;font-size:12px">Reviews laane/reply karne ke liye zaroori. (Google API setup — admin karega.)</div>
+    </div>
+
+    <!-- settings -->
+    <div class="card">
+      <h3>Reply settings</h3>
+      <label>Business name (reply me use hoga)</label>
+      <input id="business" placeholder="e.g. Sarvodaya Cafe" />
+      <div class="row">
+        <div>
+          <label>Tone</label>
+          <select id="tone">
+            <option value="friendly">Friendly</option>
+            <option value="professional">Professional</option>
+            <option value="short">Short</option>
+          </select>
+        </div>
+        <div>
+          <label>Language</label>
+          <select id="language">
+            <option>English</option>
+            <option>Hindi</option>
+            <option>Hinglish</option>
+          </select>
+        </div>
+      </div>
+      <label>Signature (optional — reply ke end me)</label>
+      <input id="signature" placeholder="e.g. — Team Sarvodaya" />
+      <div class="toggle">
+        <input type="checkbox" id="autoReply" checked />
+        <label for="autoReply" style="margin:0">Auto-reply ON (naye reviews pe bot khud reply kare)</label>
+      </div>
+      <button class="btn" id="saveBtn">Save settings</button>
+    </div>
+
+    <!-- log -->
+    <div class="card">
+      <h3>Recent auto-replies</h3>
+      <div id="log"><div class="muted">Abhi koi reply nahi. Google connect + auto-reply ON hone ke baad yahan dikhega.</div></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  const SUPABASE_URL = "https://wkuxhbyicpiqssqqnmkt.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdXhoYnlpY3BpcXNzcXFubWt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODYwNDAsImV4cCI6MjA5ODQ2MjA0MH0.tQF-0ClEVTxvzLYeTaaZbI4MOLkzHN0wdbyeBo0Spiw";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const $ = (id)=>document.getElementById(id);
+  const today = ()=> new Date().toISOString().slice(0,10);
+  function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1500); }
+  function lock(title,msg){ $("mainView").style.display="none"; $("lockTitle").textContent=title; $("lockMsg").textContent=msg; $("lockView").style.display="flex"; }
+
+  let USER = null;
+
+  (async function boot(){
+    const { data:{ session } } = await sb.auth.getSession();
+    if (!session){ location.replace("../../../user/"); return; }
+    const { data:{ user } } = await sb.auth.getUser();
+    USER = user; $("who").textContent = user.email;
+
+    // access check (client-side gate; worker bhi server-side check karta hai)
+    const { data: prof } = await sb.from("profiles").select("status").eq("user_id",user.id).single();
+    if (!prof || prof.status !== "approved"){ lock("⏳ Not approved","Admin ne abhi approve nahi kiya."); return; }
+    const { data: acc } = await sb.from("module_access").select("allowed,expiry").eq("user_id",user.id).eq("module","reviews").maybeSingle();
+    const expired = acc?.expiry && acc.expiry < today();
+    if (!acc || !acc.allowed || expired){ lock("🔒 Reviews bot locked","Ye bot tumhare liye allowed nahi hai. Admin se baat karo."); return; }
+
+    $("mainView").style.display = "block";
+    await loadConnection();
+    await loadSettings();
+    await loadLog();
+  })();
+
+  async function loadConnection(){
+    const { data } = await sb.from("reviews_connections").select("connected,account_name").eq("user_id",USER.id).maybeSingle();
+    if (data?.connected){
+      $("connStatus").innerHTML = `<span class="pill on">Connected</span> ${data.account_name||""}`;
+      $("connectBtn").textContent = "Reconnect";
+    } else {
+      $("connStatus").innerHTML = `<span class="pill off">Not connected</span>`;
+    }
+  }
+  $("connectBtn").addEventListener("click", ()=>{
+    // R7 ke baad: yahan Google Business OAuth start hoga (business.manage scope).
+    alert("Google Business connect abhi setup ho raha hai (Google API access ke baad chalega). 🚧\n\nTab tak tum settings save kar sakte ho — jaise hi connect hoga, bot kaam shuru kar dega.");
+  });
+
+  async function loadSettings(){
+    const { data } = await sb.from("reviews_settings").select("*").eq("user_id",USER.id).maybeSingle();
+    if (data){
+      $("business").value = data.business || "";
+      $("tone").value = data.tone || "friendly";
+      $("language").value = data.language || "English";
+      $("signature").value = data.signature || "";
+      $("autoReply").checked = data.auto_reply !== false;
+    }
+  }
+  $("saveBtn").addEventListener("click", async ()=>{
+    const row = {
+      user_id: USER.id,
+      business: $("business").value.trim(),
+      tone: $("tone").value,
+      language: $("language").value,
+      signature: $("signature").value.trim(),
+      auto_reply: $("autoReply").checked,
+      updated_at: new Date().toISOString(),
+    };
+    const { error } = await sb.from("reviews_settings").upsert(row, { onConflict:"user_id" });
+    toast(error ? ("Error: "+error.message) : "Settings saved ✓");
+  });
+
+  async function loadLog(){
+    const { data } = await sb.from("reviews_log").select("*").eq("user_id",USER.id).order("created_at",{ascending:false}).limit(10);
+    if (!data || !data.length) return;
+    $("log").innerHTML = data.map(r=>`
+      <div class="logrow">
+        <div><span class="stars">${"★".repeat(r.rating||0)}${"☆".repeat(5-(r.rating||0))}</span> — ${r.review_text||"(no text)"}</div>
+        <div class="reply">🤖 ${r.reply_text||""} <span style="opacity:.6">· ${r.status}</span></div>
+      </div>`).join("");
+  }
+  </script>
+</body>
+</html>
