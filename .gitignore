@@ -1,0 +1,17 @@
+# secrets — kabhi push mat karna
+.env
+*.env
+credentials/
+*token*.json
+client_secret*.json
+
+# python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# module outputs / temp
+output/
+*.log
+state.json
