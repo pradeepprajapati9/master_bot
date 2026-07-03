@@ -5,73 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin • Master Bot</title>
   <style>
-    :root { --bg:#0f1115; --card:#1a1d24; --line:#2a2e38; --txt:#e6e8ee; --mut:#8b90a0; --grn:#22c55e; --red:#ef4444; --blu:#3b82f6; }
+    :root { --bg:#0f1115; --card:#1a1d24; --side:#141720; --line:#2a2e38; --txt:#e6e8ee; --mut:#8b90a0; --grn:#22c55e; --red:#ef4444; --blu:#3b82f6; --amb:#f59e0b; }
     * { box-sizing:border-box; }
     body { margin:0; font-family:system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
-    header { padding:16px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
-    header .logo { font-weight:800; font-size:18px; }
-    header .logo span { color:var(--blu); }
-    header .who { margin-left:auto; color:var(--mut); font-size:13px; }
-    header button { background:none; border:1px solid var(--line); color:var(--mut); padding:6px 12px; border-radius:8px; cursor:pointer; }
-    .wrap { max-width:1100px; margin:0 auto; padding:22px; }
-    .center { min-height:70vh; display:flex; align-items:center; justify-content:center; }
+
+    /* login */
+    .center { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
     .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:26px; width:340px; }
-    .card h2 { margin:0 0 4px; }
-    .card p { margin:0 0 18px; color:var(--mut); font-size:13px; }
+    .card h2 { margin:0 0 4px; } .card p { margin:0 0 18px; color:var(--mut); font-size:13px; }
     label { display:block; font-size:12px; color:var(--mut); margin:12px 0 5px; }
-    input[type=email], input[type=password], input[type=date] { width:100%; padding:9px 11px; border-radius:8px; border:1px solid var(--line); background:#12141a; color:var(--txt); }
+    input[type=email],input[type=password],input[type=date]{ width:100%; padding:9px 11px; border-radius:8px; border:1px solid var(--line); background:#12141a; color:var(--txt); }
     .btn { width:100%; margin-top:16px; padding:10px; border:none; border-radius:9px; background:var(--blu); color:#fff; font-weight:600; cursor:pointer; }
     .err { color:var(--red); font-size:13px; margin-top:10px; min-height:16px; }
-    table { width:100%; border-collapse:collapse; margin-top:14px; }
-    th, td { text-align:left; padding:12px 10px; border-bottom:1px solid var(--line); font-size:14px; vertical-align:middle; }
+
+    /* app shell with sidebar */
+    .shell { display:flex; min-height:100vh; }
+    .sidebar { width:230px; flex-shrink:0; background:var(--side); border-right:1px solid var(--line); display:flex; flex-direction:column; padding:18px 14px; }
+    .brand { font-weight:800; font-size:18px; padding:6px 8px 18px; } .brand span{ color:var(--blu); }
+    .nav { display:flex; flex-direction:column; gap:4px; }
+    .nav a { display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:9px; color:var(--mut); text-decoration:none; cursor:pointer; font-size:14px; font-weight:500; }
+    .nav a:hover { background:#1c2029; color:var(--txt); }
+    .nav a.active { background:var(--blu); color:#fff; }
+    .side-foot { margin-top:auto; border-top:1px solid var(--line); padding-top:14px; }
+    .side-foot .em { color:var(--mut); font-size:12px; padding:0 8px 8px; word-break:break-all; }
+    .side-foot button { width:100%; background:none; border:1px solid var(--line); color:var(--mut); padding:8px; border-radius:8px; cursor:pointer; }
+    .main { flex:1; padding:26px 30px; overflow-x:auto; }
+    .main h1 { font-size:20px; margin:0 0 4px; }
+    .muted { color:var(--mut); font-size:13px; margin-bottom:16px; }
+
+    /* users table */
+    table { width:100%; border-collapse:collapse; }
+    th,td { text-align:left; padding:12px 10px; border-bottom:1px solid var(--line); font-size:14px; vertical-align:middle; }
     th { color:var(--mut); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
     .email { font-weight:600; }
-    .pill { padding:3px 9px; border-radius:20px; font-size:12px; }
     select { background:#12141a; color:var(--txt); border:1px solid var(--line); border-radius:7px; padding:6px 8px; }
     .modules { display:flex; flex-wrap:wrap; gap:6px; }
     .mod { display:flex; align-items:center; gap:5px; background:#12141a; border:1px solid var(--line); border-radius:8px; padding:5px 9px; font-size:13px; cursor:pointer; user-select:none; }
     .mod.on { border-color:var(--grn); color:var(--grn); }
     .mod input { accent-color:var(--grn); }
-    .expiry { width:140px; }
-    .muted { color:var(--mut); font-size:13px; }
+    .expiry { width:150px; }
+
+    /* modules overview cards */
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
+    .mcard { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; }
+    .mcard .ico { font-size:28px; } .mcard .nm { font-weight:700; margin:8px 0 4px; }
+    .mcard .cnt { color:var(--grn); font-size:14px; font-weight:600; }
+    .mcard .cnt.zero { color:var(--mut); }
+
     .toast { position:fixed; bottom:20px; right:20px; background:var(--grn); color:#04210f; padding:10px 16px; border-radius:9px; font-weight:600; opacity:0; transition:.2s; }
     .toast.show { opacity:1; }
   </style>
 </head>
 <body>
-  <!-- ===== LOGIN (shown when logged out) ===== -->
+  <!-- LOGIN -->
   <div class="center" id="loginView" style="display:none">
     <form class="card" id="loginForm" autocomplete="off">
       <h2>Master&nbsp;<span style="color:var(--blu)">Bot</span></h2>
       <p>Admin login</p>
-      <label>Email</label>
-      <input type="email" id="email" required />
-      <label>Password</label>
-      <input type="password" id="password" required />
+      <label>Email</label><input type="email" id="email" required />
+      <label>Password</label><input type="password" id="password" required />
       <button class="btn" type="submit">Login</button>
       <div class="err" id="loginErr"></div>
     </form>
   </div>
 
-  <!-- ===== ADMIN PANEL (shown when logged-in admin) ===== -->
-  <div id="panelView" style="display:none">
-    <header>
-      <div class="logo">Master<span>Bot</span> · Admin</div>
-      <div class="who" id="who"></div>
-      <button id="logout">Logout</button>
-    </header>
-    <div class="wrap">
-      <div class="muted" id="count"></div>
-      <table>
-        <thead>
-          <tr><th>User</th><th>Status</th><th>Modules (click to allow)</th><th>Access till</th></tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ===== NOT-ADMIN message ===== -->
+  <!-- NOT ADMIN -->
   <div class="center" id="denyView" style="display:none">
     <div class="card">
       <h2>Not allowed 🔒</h2>
@@ -80,132 +78,166 @@
     </div>
   </div>
 
+  <!-- APP -->
+  <div class="shell" id="appView" style="display:none">
+    <aside class="sidebar">
+      <div class="brand">Master<span>Bot</span></div>
+      <nav class="nav">
+        <a id="navUsers" class="active" onclick="switchView('users')">👥 Users</a>
+        <a id="navModules" onclick="switchView('modules')">🧩 All Modules</a>
+      </nav>
+      <div class="side-foot">
+        <div class="em" id="who"></div>
+        <button id="logout">Logout</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- USERS -->
+      <section id="usersView">
+        <h1>Users</h1>
+        <div class="muted" id="count"></div>
+        <table>
+          <thead><tr><th>User</th><th>Status</th><th>Modules (click to allow)</th><th>Access till</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </section>
+
+      <!-- MODULES -->
+      <section id="modulesView" style="display:none">
+        <h1>All Modules</h1>
+        <div class="muted">Har module pe kitne users active hain</div>
+        <div class="grid" id="mgrid"></div>
+      </section>
+    </main>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-  /* ---------- Supabase (same project as YouTube module) ---------- */
   const SUPABASE_URL = "https://wkuxhbyicpiqssqqnmkt.supabase.co";
   const SUPABASE_ANON_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdXhoYnlpY3BpcXNzcXFubWt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODYwNDAsImV4cCI6MjA5ODQ2MjA0MH0.tQF-0ClEVTxvzLYeTaaZbI4MOLkzHN0wdbyeBo0Spiw";
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  /* ---------- Modules list — naya module add karna ho to yahan add karo ---------- */
+  /* naya module add karna ho -> yahan ek line add karo */
   const MODULES = [
-    { key: "youtube",    label: "📹 YouTube" },
-    { key: "whatsapp",   label: "💬 WhatsApp" },
-    { key: "reviews",    label: "⭐ Reviews" },
-    { key: "missedcall", label: "📞 Missed-call" },
-    { key: "restaurant", label: "🍔 Restaurant" },
+    { key:"youtube",    ico:"📹", label:"YouTube" },
+    { key:"whatsapp",   ico:"💬", label:"WhatsApp" },
+    { key:"reviews",    ico:"⭐", label:"Reviews" },
+    { key:"missedcall", ico:"📞", label:"Missed-call" },
+    { key:"restaurant", ico:"🍔", label:"Restaurant" },
   ];
 
-  const $ = (id) => document.getElementById(id);
-  const show = (id) => { ["loginView","panelView","denyView"].forEach(v => $(v).style.display = "none"); $(id).style.display = (id==="panelView") ? "block" : "flex"; };
-  function toast(msg) { const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400); }
+  const $ = (id)=>document.getElementById(id);
+  const today = ()=> new Date().toISOString().slice(0,10);
+  function screen(id){ ["loginView","denyView","appView"].forEach(v=>$(v).style.display="none"); $(id).style.display = (id==="appView")?"flex":"flex"; }
+  function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400); }
 
-  /* ---------- Boot ---------- */
-  (async function boot() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) { show("loginView"); return; }
+  let ALL_ACCESS = []; // cache for modules overview
+
+  function switchView(v){
+    $("usersView").style.display  = v==="users"   ? "block":"none";
+    $("modulesView").style.display= v==="modules" ? "block":"none";
+    $("navUsers").classList.toggle("active", v==="users");
+    $("navModules").classList.toggle("active", v==="modules");
+    if (v==="modules") renderModulesOverview();
+  }
+
+  (async function boot(){
+    const { data:{ session } } = await sb.auth.getSession();
+    if (!session) { screen("loginView"); return; }
     await afterLogin();
   })();
 
-  $("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    $("loginErr").textContent = "";
-    const email = $("email").value.trim(), password = $("password").value;
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) { $("loginErr").textContent = error.message; return; }
+  $("loginForm").addEventListener("submit", async (e)=>{
+    e.preventDefault(); $("loginErr").textContent="";
+    const { error } = await sb.auth.signInWithPassword({ email:$("email").value.trim(), password:$("password").value });
+    if (error) { $("loginErr").textContent=error.message; return; }
     await afterLogin();
   });
+  $("logout").addEventListener("click", async ()=>{ await sb.auth.signOut(); location.reload(); });
+  $("denyLogout").addEventListener("click", async ()=>{ await sb.auth.signOut(); location.reload(); });
 
-  $("logout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
-  $("denyLogout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
-
-  async function afterLogin() {
-    const { data: { user } } = await sb.auth.getUser();
-    // verify this account is an admin (RLS lets admin read all profiles; a normal user only reads own)
+  async function afterLogin(){
+    const { data:{ user } } = await sb.auth.getUser();
     const { data: me } = await sb.from("profiles").select("role").eq("user_id", user.id).single();
-    if (!me || me.role !== "admin") { show("denyView"); return; }
+    if (!me || me.role !== "admin") { screen("denyView"); return; }
     $("who").textContent = user.email;
-    show("panelView");
+    screen("appView");
     await loadUsers();
   }
 
-  async function loadUsers() {
-    const { data: profiles, error } = await sb.from("profiles").select("*").order("created_at", { ascending:false });
+  async function loadUsers(){
+    const { data: profiles, error } = await sb.from("profiles").select("*").order("created_at",{ascending:false});
     if (error) { $("rows").innerHTML = `<tr><td colspan="4" class="err">${error.message}</td></tr>`; return; }
     const { data: access } = await sb.from("module_access").select("*");
-    const accMap = {}; // user_id -> { module -> {allowed, expiry} }
-    (access||[]).forEach(a => { (accMap[a.user_id] ??= {})[a.module] = a; });
+    ALL_ACCESS = access || [];
+    const accMap = {}; ALL_ACCESS.forEach(a => { (accMap[a.user_id] ??= {})[a.module] = a; });
 
     $("count").textContent = `${profiles.length} user(s)`;
     $("rows").innerHTML = "";
     profiles.forEach(p => $("rows").appendChild(renderRow(p, accMap[p.user_id] || {})));
   }
 
-  function renderRow(p, acc) {
+  function renderRow(p, acc){
     const tr = document.createElement("tr");
 
-    // User email
     const tdU = document.createElement("td");
-    tdU.innerHTML = `<div class="email">${p.email || "(no email)"}</div><div class="muted">${p.role}</div>`;
+    tdU.innerHTML = `<div class="email">${p.email || "(no email)"}</div><div class="muted" style="margin:0">${p.role}</div>`;
     tr.appendChild(tdU);
 
-    // Status dropdown
     const tdS = document.createElement("td");
     const sel = document.createElement("select");
-    ["pending","approved","blocked"].forEach(s => {
-      const o = document.createElement("option"); o.value=s; o.textContent=s; if (p.status===s) o.selected=true; sel.appendChild(o);
-    });
-    sel.onchange = async () => {
-      const { error } = await sb.from("profiles").update({ status: sel.value }).eq("user_id", p.user_id);
-      toast(error ? "Error: "+error.message : "Status saved");
-    };
-    tdS.appendChild(sel);
-    tr.appendChild(tdS);
+    ["pending","approved","blocked"].forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; if(p.status===s)o.selected=true; sel.appendChild(o); });
+    sel.onchange = async ()=>{ const { error } = await sb.from("profiles").update({status:sel.value}).eq("user_id",p.user_id); toast(error?"Error: "+error.message:"Status saved"); };
+    tdS.appendChild(sel); tr.appendChild(tdS);
 
-    // Module toggles
     const tdM = document.createElement("td");
-    const box = document.createElement("div"); box.className = "modules";
-    MODULES.forEach(m => {
+    const box = document.createElement("div"); box.className="modules";
+    const expInput = document.createElement("input"); expInput.type="date"; expInput.className="expiry";
+    MODULES.forEach(m=>{
       const on = acc[m.key]?.allowed === true;
-      const lab = document.createElement("label"); lab.className = "mod" + (on ? " on" : "");
-      const cb = document.createElement("input"); cb.type="checkbox"; cb.checked = on;
-      cb.onchange = async () => {
-        const expiry = tdE_input.value || null;
+      const lab = document.createElement("label"); lab.className="mod"+(on?" on":"");
+      const cb = document.createElement("input"); cb.type="checkbox"; cb.checked=on;
+      cb.onchange = async ()=>{
         const { error } = await sb.from("module_access")
-          .upsert({ user_id:p.user_id, module:m.key, allowed:cb.checked, expiry, updated_at:new Date().toISOString() },
-                  { onConflict:"user_id,module" });
-        if (error) { toast("Error: "+error.message); cb.checked = !cb.checked; return; }
-        lab.classList.toggle("on", cb.checked);
-        toast(`${m.label} ${cb.checked ? "ON" : "OFF"}`);
+          .upsert({ user_id:p.user_id, module:m.key, allowed:cb.checked, expiry:expInput.value||null, updated_at:new Date().toISOString() }, { onConflict:"user_id,module" });
+        if (error){ toast("Error: "+error.message); cb.checked=!cb.checked; return; }
+        lab.classList.toggle("on", cb.checked); toast(`${m.ico} ${m.label} ${cb.checked?"ON":"OFF"}`);
+        // keep cache in sync for modules overview
+        const found = ALL_ACCESS.find(a=>a.user_id===p.user_id && a.module===m.key);
+        if (found) found.allowed = cb.checked; else ALL_ACCESS.push({user_id:p.user_id, module:m.key, allowed:cb.checked, expiry:expInput.value||null});
       };
-      lab.appendChild(cb); lab.append(" " + m.label);
-      box.appendChild(lab);
+      lab.appendChild(cb); lab.append(" "+m.ico+" "+m.label); box.appendChild(lab);
     });
-    tdM.appendChild(box);
-    tr.appendChild(tdM);
+    tdM.appendChild(box); tr.appendChild(tdM);
 
-    // Expiry (applies to modules turned on after this is set)
     const tdE = document.createElement("td");
-    const tdE_input = document.createElement("input");
-    tdE_input.type="date"; tdE_input.className="expiry";
     const anyExp = Object.values(acc).map(a=>a.expiry).filter(Boolean)[0];
-    if (anyExp) tdE_input.value = anyExp;
-    tdE_input.onchange = async () => {
-      // update expiry on all currently-allowed modules for this user
+    if (anyExp) expInput.value = anyExp;
+    expInput.onchange = async ()=>{
       const allowed = Object.values(acc).filter(a=>a.allowed).map(a=>a.module);
-      for (const mod of allowed) {
-        await sb.from("module_access").update({ expiry: tdE_input.value || null }).eq("user_id",p.user_id).eq("module",mod);
-      }
+      for (const mod of allowed) await sb.from("module_access").update({expiry:expInput.value||null}).eq("user_id",p.user_id).eq("module",mod);
       toast("Expiry saved");
     };
-    tdE.appendChild(tdE_input);
-    tr.appendChild(tdE);
-
+    tdE.appendChild(expInput); tr.appendChild(tdE);
     return tr;
   }
+
+  function renderModulesOverview(){
+    const t = today();
+    const grid = $("mgrid"); grid.innerHTML="";
+    MODULES.forEach(m=>{
+      const n = ALL_ACCESS.filter(a=>a.module===m.key && a.allowed && !(a.expiry && a.expiry<t)).length;
+      const c = document.createElement("div"); c.className="mcard";
+      c.innerHTML = `<div class="ico">${m.ico}</div><div class="nm">${m.label}</div>
+        <div class="cnt ${n?'':'zero'}">${n} user${n===1?'':'s'} active</div>`;
+      grid.appendChild(c);
+    });
+  }
+  window.switchView = switchView;
   </script>
 </body>
 </html>
