@@ -5,55 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin • Master Bot</title>
   <style>
-    :root { --bg:#0f1115; --card:#1a1d24; --side:#141720; --line:#2a2e38; --txt:#e6e8ee; --mut:#8b90a0; --grn:#22c55e; --red:#ef4444; --blu:#3b82f6; --amb:#f59e0b; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
+    :root{
+      --bg:#0b0d12; --side:#0f131b; --panel:#151922; --panel2:#1a1f2b; --line:#252b38;
+      --txt:#e8eaf0; --mut:#8b93a7; --dim:#5b6474;
+      --blu:#4f7cff; --grn:#26c281; --amb:#f5a623; --red:#f0554b; --vio:#8b5cf6;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--txt); -webkit-font-smoothing:antialiased; }
 
-    /* login */
-    .center { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
-    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:26px; width:340px; }
-    .card h2 { margin:0 0 4px; } .card p { margin:0 0 18px; color:var(--mut); font-size:13px; }
-    label { display:block; font-size:12px; color:var(--mut); margin:12px 0 5px; }
-    input[type=email],input[type=password],input[type=date]{ width:100%; padding:9px 11px; border-radius:8px; border:1px solid var(--line); background:#12141a; color:var(--txt); }
-    .btn { width:100%; margin-top:16px; padding:10px; border:none; border-radius:9px; background:var(--blu); color:#fff; font-weight:600; cursor:pointer; }
-    .err { color:var(--red); font-size:13px; margin-top:10px; min-height:16px; }
+    /* ---------- login / deny ---------- */
+    .center{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .card{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:28px; width:350px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+    .card h2{ margin:0 0 4px; font-size:22px; } .card p{ margin:0 0 18px; color:var(--mut); font-size:13px; }
+    label{ display:block; font-size:12px; color:var(--mut); margin:14px 0 6px; }
+    input[type=email],input[type=password],input[type=date]{ width:100%; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:#0e1219; color:var(--txt); font-size:14px; }
+    input:focus{ outline:none; border-color:var(--blu); }
+    .btn{ width:100%; margin-top:18px; padding:11px; border:none; border-radius:10px; background:var(--blu); color:#fff; font-weight:600; cursor:pointer; font-size:14px; }
+    .btn:hover{ filter:brightness(1.08); }
+    .err{ color:var(--red); font-size:13px; margin-top:10px; min-height:16px; }
 
-    /* app shell with sidebar */
-    .shell { display:flex; min-height:100vh; }
-    .sidebar { width:230px; flex-shrink:0; background:var(--side); border-right:1px solid var(--line); display:flex; flex-direction:column; padding:18px 14px; }
-    .brand { font-weight:800; font-size:18px; padding:6px 8px 18px; } .brand span{ color:var(--blu); }
-    .nav { display:flex; flex-direction:column; gap:4px; }
-    .nav a { display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:9px; color:var(--mut); text-decoration:none; cursor:pointer; font-size:14px; font-weight:500; }
-    .nav a:hover { background:#1c2029; color:var(--txt); }
-    .nav a.active { background:var(--blu); color:#fff; }
-    .side-foot { margin-top:auto; border-top:1px solid var(--line); padding-top:14px; }
-    .side-foot .em { color:var(--mut); font-size:12px; padding:0 8px 8px; word-break:break-all; }
-    .side-foot button { width:100%; background:none; border:1px solid var(--line); color:var(--mut); padding:8px; border-radius:8px; cursor:pointer; }
-    .main { flex:1; padding:26px 30px; overflow-x:auto; }
-    .main h1 { font-size:20px; margin:0 0 4px; }
-    .muted { color:var(--mut); font-size:13px; margin-bottom:16px; }
+    /* ---------- shell ---------- */
+    .shell{ display:flex; min-height:100vh; }
+    .sidebar{ width:236px; flex-shrink:0; background:var(--side); border-right:1px solid var(--line); display:flex; flex-direction:column; padding:20px 16px; position:sticky; top:0; height:100vh; }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; padding:4px 8px 22px; }
+    .brand .dot{ width:30px; height:30px; border-radius:9px; background:linear-gradient(135deg,var(--blu),var(--vio)); display:flex; align-items:center; justify-content:center; font-size:16px; }
+    .brand span{ color:var(--blu); }
+    .navlabel{ font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--dim); padding:6px 10px; }
+    .nav{ display:flex; flex-direction:column; gap:3px; }
+    .nav a{ display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:10px; color:var(--mut); text-decoration:none; cursor:pointer; font-size:14px; font-weight:500; transition:.12s; }
+    .nav a:hover{ background:#161b26; color:var(--txt); }
+    .nav a.active{ background:var(--blu); color:#fff; box-shadow:0 6px 16px rgba(79,124,255,.3); }
+    .side-foot{ margin-top:auto; border-top:1px solid var(--line); padding-top:14px; display:flex; align-items:center; gap:10px; }
+    .side-foot .av{ width:34px; height:34px; border-radius:50%; background:var(--vio); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0; }
+    .side-foot .em{ color:var(--mut); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+    .side-foot button{ background:none; border:1px solid var(--line); color:var(--mut); padding:7px 9px; border-radius:8px; cursor:pointer; font-size:12px; }
+    .side-foot button:hover{ color:var(--red); border-color:var(--red); }
 
-    /* users table */
-    table { width:100%; border-collapse:collapse; }
-    th,td { text-align:left; padding:12px 10px; border-bottom:1px solid var(--line); font-size:14px; vertical-align:middle; }
-    th { color:var(--mut); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
-    .email { font-weight:600; }
-    select { background:#12141a; color:var(--txt); border:1px solid var(--line); border-radius:7px; padding:6px 8px; }
-    .modules { display:flex; flex-wrap:wrap; gap:6px; }
-    .mod { display:flex; align-items:center; gap:5px; background:#12141a; border:1px solid var(--line); border-radius:8px; padding:5px 9px; font-size:13px; cursor:pointer; user-select:none; }
-    .mod.on { border-color:var(--grn); color:var(--grn); }
-    .mod input { accent-color:var(--grn); }
-    .expiry { width:150px; }
+    .main{ flex:1; padding:30px 34px; min-width:0; }
+    .phead{ margin-bottom:22px; }
+    .phead h1{ font-size:22px; margin:0 0 4px; }
+    .phead .sub{ color:var(--mut); font-size:13px; }
 
-    /* modules overview cards */
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
-    .mcard { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; }
-    .mcard .ico { font-size:28px; } .mcard .nm { font-weight:700; margin:8px 0 4px; }
-    .mcard .cnt { color:var(--grn); font-size:14px; font-weight:600; }
-    .mcard .cnt.zero { color:var(--mut); }
+    /* ---------- stat tiles ---------- */
+    .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+    .stat{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+    .stat .k{ font-size:12px; color:var(--mut); display:flex; align-items:center; gap:7px; }
+    .stat .k .d{ width:8px; height:8px; border-radius:50%; }
+    .stat .v{ font-size:28px; font-weight:800; margin-top:8px; }
 
-    .toast { position:fixed; bottom:20px; right:20px; background:var(--grn); color:#04210f; padding:10px 16px; border-radius:9px; font-weight:600; opacity:0; transition:.2s; }
-    .toast.show { opacity:1; }
+    /* ---------- panel + table ---------- */
+    .panel{ background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+    table{ width:100%; border-collapse:collapse; }
+    th,td{ text-align:left; padding:15px 18px; font-size:14px; vertical-align:middle; }
+    thead th{ color:var(--mut); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.6px; background:var(--panel2); border-bottom:1px solid var(--line); }
+    tbody tr{ border-bottom:1px solid var(--line); transition:.1s; }
+    tbody tr:last-child{ border-bottom:none; }
+    tbody tr:hover{ background:#171c26; }
+
+    .user{ display:flex; align-items:center; gap:12px; }
+    .avatar{ width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; color:#fff; flex-shrink:0; }
+    .user .em{ font-weight:600; } .user .ro{ color:var(--dim); font-size:12px; }
+
+    .status-sel{ appearance:none; border:none; border-radius:20px; padding:6px 30px 6px 14px; font-size:12.5px; font-weight:600; cursor:pointer;
+      background-repeat:no-repeat; background-position:right 10px center;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'><path d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5'/></svg>"); }
+    .status-sel.pending{ background-color:rgba(245,166,35,.16); color:var(--amb); }
+    .status-sel.approved{ background-color:rgba(38,194,129,.16); color:var(--grn); }
+    .status-sel.blocked{ background-color:rgba(240,85,75,.16); color:var(--red); }
+    .status-sel option{ background:var(--panel); color:var(--txt); }
+
+    .modules{ display:flex; flex-wrap:wrap; gap:7px; max-width:420px; }
+    .mod{ display:inline-flex; align-items:center; gap:6px; background:#0e1219; border:1px solid var(--line); border-radius:9px; padding:6px 10px; font-size:12.5px; color:var(--mut); cursor:pointer; user-select:none; transition:.12s; }
+    .mod:hover{ border-color:var(--mut); }
+    .mod.on{ background:rgba(38,194,129,.12); border-color:var(--grn); color:var(--grn); }
+    .mod input{ accent-color:var(--grn); width:14px; height:14px; }
+    .expiry{ width:150px; }
+
+    /* ---------- modules overview ---------- */
+    .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+    .mcard{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; }
+    .mcard .top{ display:flex; align-items:center; gap:12px; }
+    .mcard .ico{ width:44px; height:44px; border-radius:11px; background:#0e1219; display:flex; align-items:center; justify-content:center; font-size:22px; }
+    .mcard .nm{ font-weight:700; font-size:15px; }
+    .mcard .cnt{ font-size:13px; margin-top:2px; }
+    .mcard .cnt b{ color:var(--grn); } .mcard .cnt.zero b{ color:var(--dim); }
+    .bar{ height:6px; border-radius:6px; background:#0e1219; margin-top:14px; overflow:hidden; }
+    .bar > i{ display:block; height:100%; background:linear-gradient(90deg,var(--grn),#3ddc97); border-radius:6px; }
+
+    .toast{ position:fixed; bottom:22px; right:22px; background:var(--grn); color:#04210f; padding:11px 18px; border-radius:10px; font-weight:600; font-size:13px; opacity:0; transform:translateY(8px); transition:.2s; box-shadow:0 10px 30px rgba(0,0,0,.4); }
+    .toast.show{ opacity:1; transform:translateY(0); }
+    .toast.bad{ background:var(--red); color:#fff; }
+
+    @media(max-width:820px){ .stats{ grid-template-columns:repeat(2,1fr);} .sidebar{ width:64px; } .brand span,.navlabel,.nav a span,.side-foot .em,.side-foot button{ display:none; } .main{ padding:20px; } .modules{ max-width:none; } }
   </style>
 </head>
 <body>
@@ -81,12 +124,16 @@
   <!-- APP -->
   <div class="shell" id="appView" style="display:none">
     <aside class="sidebar">
-      <div class="brand">Master<span>Bot</span></div>
+      <div class="brand"><div class="dot">🤖</div>Master<span>Bot</span></div>
+      <div class="navlabel">Menu</div>
       <nav class="nav">
-        <a id="navUsers" class="active" onclick="switchView('users')">👥 Users</a>
-        <a id="navModules" onclick="switchView('modules')">🧩 All Modules</a>
+        <a id="navUsers" class="active" onclick="switchView('users')">👥 <span>Users</span></a>
+        <a id="navModules" onclick="switchView('modules')">🧩 <span>All Modules</span></a>
       </nav>
+      <div class="navlabel" style="margin-top:16px">Bots</div>
+      <nav class="nav" id="botNav"></nav>
       <div class="side-foot">
+        <div class="av" id="meAv">A</div>
         <div class="em" id="who"></div>
         <button id="logout">Logout</button>
       </div>
@@ -95,19 +142,31 @@
     <main class="main">
       <!-- USERS -->
       <section id="usersView">
-        <h1>Users</h1>
-        <div class="muted" id="count"></div>
-        <table>
-          <thead><tr><th>User</th><th>Status</th><th>Modules (click to allow)</th><th>Access till</th></tr></thead>
-          <tbody id="rows"></tbody>
-        </table>
+        <div class="phead"><h1>Users</h1><div class="sub">Approve karo, block karo, aur modules on/off karo</div></div>
+        <div class="stats" id="stats"></div>
+        <div class="panel">
+          <table>
+            <thead><tr><th>User</th><th>Status</th><th>Modules (click to allow)</th><th>Access till</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
       </section>
 
       <!-- MODULES -->
       <section id="modulesView" style="display:none">
-        <h1>All Modules</h1>
-        <div class="muted">Har module pe kitne users active hain</div>
+        <div class="phead"><h1>All Modules</h1><div class="sub">Har module pe kitne users active hain</div></div>
         <div class="grid" id="mgrid"></div>
+      </section>
+
+      <!-- SINGLE BOT -->
+      <section id="botView" style="display:none">
+        <div class="phead"><h1 id="botTitle"></h1><div class="sub" id="botSub"></div></div>
+        <div class="panel">
+          <table>
+            <thead><tr><th>User</th><th>Account status</th><th>Access to this bot</th><th>Till</th></tr></thead>
+            <tbody id="botRows"></tbody>
+          </table>
+        </div>
       </section>
     </main>
   </div>
@@ -121,7 +180,6 @@
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdXhoYnlpY3BpcXNzcXFubWt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODYwNDAsImV4cCI6MjA5ODQ2MjA0MH0.tQF-0ClEVTxvzLYeTaaZbI4MOLkzHN0wdbyeBo0Spiw";
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  /* naya module add karna ho -> yahan ek line add karo */
   const MODULES = [
     { key:"youtube",    ico:"📹", label:"YouTube" },
     { key:"whatsapp",   ico:"💬", label:"WhatsApp" },
@@ -129,21 +187,33 @@
     { key:"missedcall", ico:"📞", label:"Missed-call" },
     { key:"restaurant", ico:"🍔", label:"Restaurant" },
   ];
+  const AV_COLORS = ["#4f7cff","#26c281","#f5a623","#f0554b","#8b5cf6","#0ea5e9","#ec4899"];
 
   const $ = (id)=>document.getElementById(id);
   const today = ()=> new Date().toISOString().slice(0,10);
-  function screen(id){ ["loginView","denyView","appView"].forEach(v=>$(v).style.display="none"); $(id).style.display = (id==="appView")?"flex":"flex"; }
-  function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1400); }
+  function screen(id){ ["loginView","denyView","appView"].forEach(v=>$(v).style.display="none"); $(id).style.display="flex"; }
+  function toast(m,bad){ const t=$("toast"); t.textContent=m; t.className="toast show"+(bad?" bad":""); setTimeout(()=>t.className="toast",1500); }
+  function avColor(s){ let h=0; for(const c of (s||"")) h=(h*31+c.charCodeAt(0))>>>0; return AV_COLORS[h%AV_COLORS.length]; }
 
-  let ALL_ACCESS = []; // cache for modules overview
+  let ALL_ACCESS = [], PROFILES = [], ACC_MAP = {};
+
+  function buildBotNav(){
+    $("botNav").innerHTML = MODULES.map(m =>
+      `<a id="navbot-${m.key}" onclick="switchView('bot:${m.key}')">${m.ico} <span>${m.label}</span></a>`
+    ).join("");
+  }
 
   function switchView(v){
-    $("usersView").style.display  = v==="users"   ? "block":"none";
-    $("modulesView").style.display= v==="modules" ? "block":"none";
-    $("navUsers").classList.toggle("active", v==="users");
-    $("navModules").classList.toggle("active", v==="modules");
-    if (v==="modules") renderModulesOverview();
+    const isUsers=v==="users", isMods=v==="modules", isBot=v.startsWith("bot:");
+    $("usersView").style.display   = isUsers ? "block":"none";
+    $("modulesView").style.display = isMods  ? "block":"none";
+    $("botView").style.display     = isBot   ? "block":"none";
+    document.querySelectorAll(".nav a").forEach(a=>a.classList.remove("active"));
+    if(isUsers) $("navUsers").classList.add("active");
+    else if(isMods){ $("navModules").classList.add("active"); renderModulesOverview(); }
+    else if(isBot){ const k=v.slice(4); document.getElementById("navbot-"+k)?.classList.add("active"); renderBotView(k); }
   }
+  window.switchView = switchView;
 
   (async function boot(){
     const { data:{ session } } = await sb.auth.getSession();
@@ -165,79 +235,152 @@
     const { data: me } = await sb.from("profiles").select("role").eq("user_id", user.id).single();
     if (!me || me.role !== "admin") { screen("denyView"); return; }
     $("who").textContent = user.email;
+    $("meAv").textContent = (user.email||"A")[0].toUpperCase();
+    $("meAv").style.background = avColor(user.email);
     screen("appView");
+    buildBotNav();
     await loadUsers();
   }
 
   async function loadUsers(){
     const { data: profiles, error } = await sb.from("profiles").select("*").order("created_at",{ascending:false});
-    if (error) { $("rows").innerHTML = `<tr><td colspan="4" class="err">${error.message}</td></tr>`; return; }
+    if (error){ $("rows").innerHTML=`<tr><td colspan="4" class="err">${error.message}</td></tr>`; return; }
     const { data: access } = await sb.from("module_access").select("*");
     ALL_ACCESS = access || [];
-    const accMap = {}; ALL_ACCESS.forEach(a => { (accMap[a.user_id] ??= {})[a.module] = a; });
+    const accMap = {}; ALL_ACCESS.forEach(a=>{ (accMap[a.user_id] ??= {})[a.module]=a; });
+    PROFILES = profiles; ACC_MAP = accMap;
 
-    $("count").textContent = `${profiles.length} user(s)`;
-    $("rows").innerHTML = "";
-    profiles.forEach(p => $("rows").appendChild(renderRow(p, accMap[p.user_id] || {})));
+    // stat tiles
+    const c = { total:profiles.length, pending:0, approved:0, blocked:0 };
+    profiles.forEach(p=>{ if(c[p.status]!==undefined) c[p.status]++; });
+    $("stats").innerHTML = `
+      ${statTile("Total users", c.total, "var(--blu)")}
+      ${statTile("Pending", c.pending, "var(--amb)")}
+      ${statTile("Approved", c.approved, "var(--grn)")}
+      ${statTile("Blocked", c.blocked, "var(--red)")}`;
+
+    $("rows").innerHTML="";
+    profiles.forEach(p=> $("rows").appendChild(renderRow(p, accMap[p.user_id]||{})));
   }
+  function statTile(k,v,col){ return `<div class="stat"><div class="k"><span class="d" style="background:${col}"></span>${k}</div><div class="v">${v}</div></div>`; }
 
   function renderRow(p, acc){
     const tr = document.createElement("tr");
 
+    // user + avatar
     const tdU = document.createElement("td");
-    tdU.innerHTML = `<div class="email">${p.email || "(no email)"}</div><div class="muted" style="margin:0">${p.role}</div>`;
+    const initial = (p.email||"?")[0].toUpperCase();
+    tdU.innerHTML = `<div class="user"><div class="avatar" style="background:${avColor(p.email)}">${initial}</div>
+      <div><div class="em">${p.email||"(no email)"}</div><div class="ro">${p.role}</div></div></div>`;
     tr.appendChild(tdU);
 
+    // status pill-select
     const tdS = document.createElement("td");
-    const sel = document.createElement("select");
-    ["pending","approved","blocked"].forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s; if(p.status===s)o.selected=true; sel.appendChild(o); });
-    sel.onchange = async ()=>{ const { error } = await sb.from("profiles").update({status:sel.value}).eq("user_id",p.user_id); toast(error?"Error: "+error.message:"Status saved"); };
+    const sel = document.createElement("select"); sel.className="status-sel "+p.status;
+    ["pending","approved","blocked"].forEach(s=>{ const o=document.createElement("option"); o.value=s; o.textContent=s[0].toUpperCase()+s.slice(1); if(p.status===s)o.selected=true; sel.appendChild(o); });
+    sel.onchange = async ()=>{
+      sel.className="status-sel "+sel.value;
+      const { error } = await sb.from("profiles").update({status:sel.value}).eq("user_id",p.user_id);
+      toast(error?("Error: "+error.message):("Status → "+sel.value), !!error);
+      if(!error) loadUsers();  // refresh stat tiles
+    };
     tdS.appendChild(sel); tr.appendChild(tdS);
 
+    // modules
     const tdM = document.createElement("td");
     const box = document.createElement("div"); box.className="modules";
     const expInput = document.createElement("input"); expInput.type="date"; expInput.className="expiry";
     MODULES.forEach(m=>{
-      const on = acc[m.key]?.allowed === true;
+      const on = acc[m.key]?.allowed===true;
       const lab = document.createElement("label"); lab.className="mod"+(on?" on":"");
       const cb = document.createElement("input"); cb.type="checkbox"; cb.checked=on;
       cb.onchange = async ()=>{
         const { error } = await sb.from("module_access")
           .upsert({ user_id:p.user_id, module:m.key, allowed:cb.checked, expiry:expInput.value||null, updated_at:new Date().toISOString() }, { onConflict:"user_id,module" });
-        if (error){ toast("Error: "+error.message); cb.checked=!cb.checked; return; }
+        if(error){ toast("Error: "+error.message,true); cb.checked=!cb.checked; return; }
         lab.classList.toggle("on", cb.checked); toast(`${m.ico} ${m.label} ${cb.checked?"ON":"OFF"}`);
-        // keep cache in sync for modules overview
-        const found = ALL_ACCESS.find(a=>a.user_id===p.user_id && a.module===m.key);
-        if (found) found.allowed = cb.checked; else ALL_ACCESS.push({user_id:p.user_id, module:m.key, allowed:cb.checked, expiry:expInput.value||null});
+        const f = ALL_ACCESS.find(a=>a.user_id===p.user_id && a.module===m.key);
+        if(f) f.allowed=cb.checked; else ALL_ACCESS.push({user_id:p.user_id,module:m.key,allowed:cb.checked,expiry:expInput.value||null});
       };
       lab.appendChild(cb); lab.append(" "+m.ico+" "+m.label); box.appendChild(lab);
     });
     tdM.appendChild(box); tr.appendChild(tdM);
 
+    // expiry
     const tdE = document.createElement("td");
     const anyExp = Object.values(acc).map(a=>a.expiry).filter(Boolean)[0];
-    if (anyExp) expInput.value = anyExp;
+    if(anyExp) expInput.value=anyExp;
     expInput.onchange = async ()=>{
       const allowed = Object.values(acc).filter(a=>a.allowed).map(a=>a.module);
-      for (const mod of allowed) await sb.from("module_access").update({expiry:expInput.value||null}).eq("user_id",p.user_id).eq("module",mod);
+      for(const mod of allowed) await sb.from("module_access").update({expiry:expInput.value||null}).eq("user_id",p.user_id).eq("module",mod);
       toast("Expiry saved");
     };
     tdE.appendChild(expInput); tr.appendChild(tdE);
     return tr;
   }
 
+  function renderBotView(key){
+    const m = MODULES.find(x=>x.key===key); if(!m) return;
+    const t = today();
+    $("botTitle").innerHTML = `${m.ico} ${m.label}`;
+    const n = ALL_ACCESS.filter(a=>a.module===key && a.allowed && !(a.expiry && a.expiry<t)).length;
+    $("botSub").textContent = `${n} user(s) active · yahan se sirf is bot ka access on/off karo`;
+
+    const tb = $("botRows"); tb.innerHTML="";
+    PROFILES.forEach(p=>{
+      const a  = (ACC_MAP[p.user_id]||{})[key];
+      const on = a?.allowed===true;
+      const tr = document.createElement("tr");
+
+      const initial = (p.email||"?")[0].toUpperCase();
+      const tdU = document.createElement("td");
+      tdU.innerHTML = `<div class="user"><div class="avatar" style="background:${avColor(p.email)}">${initial}</div>
+        <div><div class="em">${p.email||"(no email)"}</div><div class="ro">${p.role}</div></div></div>`;
+      tr.appendChild(tdU);
+
+      const tdS = document.createElement("td");
+      tdS.innerHTML = `<span class="status-sel ${p.status}" style="padding:6px 14px;background-image:none">${p.status}</span>`;
+      tr.appendChild(tdS);
+
+      const tdT = document.createElement("td");
+      const lab = document.createElement("label"); lab.className="mod"+(on?" on":"");
+      const cb  = document.createElement("input"); cb.type="checkbox"; cb.checked=on;
+      const exp = document.createElement("input"); exp.type="date"; exp.className="expiry"; if(a?.expiry) exp.value=a.expiry;
+      const setTxt = ()=> lab.lastChild.textContent = " " + (cb.checked ? "Allowed" : "Locked");
+      cb.onchange = async ()=>{
+        const { error } = await sb.from("module_access")
+          .upsert({ user_id:p.user_id, module:key, allowed:cb.checked, expiry:exp.value||null, updated_at:new Date().toISOString() }, { onConflict:"user_id,module" });
+        if(error){ toast("Error: "+error.message,true); cb.checked=!cb.checked; return; }
+        lab.classList.toggle("on", cb.checked); setTxt(); toast(`${m.ico} ${p.email} ${cb.checked?"ON":"OFF"}`);
+        const f = ALL_ACCESS.find(x=>x.user_id===p.user_id && x.module===key);
+        if(f) f.allowed=cb.checked; else ALL_ACCESS.push({user_id:p.user_id,module:key,allowed:cb.checked,expiry:exp.value||null});
+        (ACC_MAP[p.user_id] ??= {})[key] = { allowed:cb.checked, expiry:exp.value||null };
+      };
+      lab.appendChild(cb); lab.append(" "+(on?"Allowed":"Locked"));
+      tdT.appendChild(lab); tr.appendChild(tdT);
+
+      const tdE = document.createElement("td");
+      exp.onchange = async ()=>{ await sb.from("module_access").update({expiry:exp.value||null}).eq("user_id",p.user_id).eq("module",key); toast("Expiry saved"); };
+      tdE.appendChild(exp); tr.appendChild(tdE);
+
+      tb.appendChild(tr);
+    });
+  }
+
   function renderModulesOverview(){
     const t = today();
+    const total = new Set(ALL_ACCESS.map(a=>a.user_id)).size || 1;
     const grid = $("mgrid"); grid.innerHTML="";
     MODULES.forEach(m=>{
       const n = ALL_ACCESS.filter(a=>a.module===m.key && a.allowed && !(a.expiry && a.expiry<t)).length;
+      const pct = Math.min(100, Math.round(n/total*100));
       const c = document.createElement("div"); c.className="mcard";
-      c.innerHTML = `<div class="ico">${m.ico}</div><div class="nm">${m.label}</div>
-        <div class="cnt ${n?'':'zero'}">${n} user${n===1?'':'s'} active</div>`;
+      c.innerHTML = `<div class="top"><div class="ico">${m.ico}</div><div><div class="nm">${m.label}</div>
+        <div class="cnt ${n?'':'zero'}"><b>${n}</b> user${n===1?'':'s'} active</div></div></div>
+        <div class="bar"><i style="width:${pct}%"></i></div>`;
       grid.appendChild(c);
     });
   }
-  window.switchView = switchView;
   </script>
 </body>
 </html>
