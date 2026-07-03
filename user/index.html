@@ -40,7 +40,15 @@
     <div class="card">
       <h2>Master&nbsp;<span style="color:var(--blu)">Bot</span></h2>
       <p>Sign in to access your bots</p>
-      <button class="btn" id="googleBtn">🔵 Continue with Google</button>
+      <form id="pwForm" autocomplete="off" style="text-align:left">
+        <input type="email" id="uemail" placeholder="Email" required
+          style="width:100%;padding:10px 12px;margin-bottom:10px;border-radius:8px;border:1px solid var(--line);background:#12141a;color:var(--txt)" />
+        <input type="password" id="upass" placeholder="Password" required
+          style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:#12141a;color:var(--txt)" />
+        <button class="btn" type="submit" style="margin-top:14px">Login</button>
+      </form>
+      <div style="color:var(--mut);font-size:12px;margin:16px 0">— ya —</div>
+      <button class="btn" id="googleBtn" style="background:#12141a;border:1px solid var(--line)">🔵 Continue with Google</button>
       <div class="err" id="loginErr"></div>
     </div>
   </div>
@@ -94,6 +102,15 @@
     if (!session) { show("loginView"); return; }
     await afterLogin();
   })();
+
+  $("pwForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    $("loginErr").textContent = "";
+    const email = $("uemail").value.trim(), password = $("upass").value;
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { $("loginErr").textContent = error.message; return; }
+    await afterLogin();
+  });
 
   $("googleBtn").addEventListener("click", async ()=>{
     const redirectTo = window.location.href.split("#")[0];
