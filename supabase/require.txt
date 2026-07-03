@@ -1,4 +1,0 @@
-Page	URL
-🏠 Landing	https://pradeepprajapati9.github.io/master_bot/
-👑 Admin	https://pradeepprajapati9.github.io/master_bot/admin/
-👤 User	https://pradeepprajapati9.github.io/master_bot/user/
