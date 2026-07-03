@@ -117,6 +117,8 @@
         <h3 style="margin-top:22px">Customer order link</h3>
         <div class="muted">Ye link customers ko do (QR/WhatsApp/menu pe) — wo bina login order karenge:</div>
         <div class="linkbox"><code id="publicLink">Save settings + slug first…</code><button class="btn sm" onclick="copyLink()">Copy</button></div>
+        <div id="qrBox" style="margin-top:16px"></div>
+        <button class="btn sm ghost" id="qrDl" style="display:none" onclick="downloadQR()">⬇ Download QR (print karo, table pe lagao)</button>
       </div>
     </section>
   </div>
@@ -124,6 +126,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script>
   const SUPABASE_URL = "https://wkuxhbyicpiqssqqnmkt.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -176,9 +179,22 @@
     CUR=row.currency; SLUG=slug; $("sSlug").value=slug; updateLink(); toast("Settings saved ✓");
   }
   function publicUrl(){ return SLUG ? new URL(`order.html?r=${SLUG}`, location.href).href : ""; }
-  function updateLink(){ $("publicLink").textContent = publicUrl() || "Save settings + slug first…"; }
+  function updateLink(){ $("publicLink").textContent = publicUrl() || "Save settings + slug first…"; renderQR(); }
   function copyLink(){ const u=publicUrl(); if(!u){toast("Pehle slug save karo");return;} navigator.clipboard.writeText(u); toast("Link copied ✓"); }
-  window.saveSettings=saveSettings; window.copyLink=copyLink;
+  function renderQR(){
+    const u=publicUrl(); const box=$("qrBox"); box.innerHTML=""; $("qrDl").style.display="none";
+    if(!u || typeof QRCode==="undefined") return;
+    QRCode.toCanvas(u, { width:190, margin:1 }, (err,canvas)=>{
+      if(err) return;
+      canvas.id="qrCanvas"; canvas.style.cssText="background:#fff;padding:10px;border-radius:12px";
+      box.appendChild(canvas); $("qrDl").style.display="inline-block";
+    });
+  }
+  function downloadQR(){
+    const c=$("qrCanvas"); if(!c) return;
+    const a=document.createElement("a"); a.href=c.toDataURL("image/png"); a.download=(SLUG||"menu")+"-QR.png"; a.click();
+  }
+  window.saveSettings=saveSettings; window.copyLink=copyLink; window.downloadQR=downloadQR;
 
   /* ---------- menu ---------- */
   async function addItem(){
@@ -209,8 +225,22 @@
   /* ---------- orders ---------- */
   const FLOW={ new:"preparing", preparing:"ready", ready:"done" };
   const NEXTLBL={ new:"Accept ▶", preparing:"Ready ▶", ready:"Done ✓" };
+  let SEEN=new Set(), firstLoad=true;
+  function beep(){
+    try{
+      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.type="sine"; o.frequency.value=880;
+      g.gain.setValueAtTime(0.35, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
+      o.start(); o.stop(ctx.currentTime+0.5);
+    }catch(e){}
+  }
   async function loadOrders(){
     const { data } = await sb.from("orders").select("*").eq("user_id",USER.id).order("created_at",{ascending:false}).limit(40);
+    // naya order aaya? -> beep
+    if(!firstLoad && (data||[]).some(o=>o.status==="new" && !SEEN.has(o.id))){ beep(); toast("🔔 Naya order aaya!"); }
+    (data||[]).forEach(o=>SEEN.add(o.id)); firstLoad=false;
     const active=(data||[]).filter(o=>o.status==="new").length;
     $("newCount").textContent=active; $("newCount").style.display=active?"inline-block":"none";
     if(!data || !data.length){ $("orders").innerHTML='<div class="muted">Abhi koi order nahi. Customer order link se order aayega yahan (turant).</div>'; return; }
