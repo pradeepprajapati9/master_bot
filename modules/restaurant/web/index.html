@@ -126,7 +126,6 @@
   <div class="toast" id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script>
   const SUPABASE_URL = "https://wkuxhbyicpiqssqqnmkt.supabase.co";
   const SUPABASE_ANON_KEY =
@@ -183,16 +182,17 @@
   function copyLink(){ const u=publicUrl(); if(!u){toast("Pehle slug save karo");return;} navigator.clipboard.writeText(u); toast("Link copied ✓"); }
   function renderQR(){
     const u=publicUrl(); const box=$("qrBox"); box.innerHTML=""; $("qrDl").style.display="none";
-    if(!u || typeof QRCode==="undefined") return;
-    QRCode.toCanvas(u, { width:190, margin:1 }, (err,canvas)=>{
-      if(err) return;
-      canvas.id="qrCanvas"; canvas.style.cssText="background:#fff;padding:10px;border-radius:12px";
-      box.appendChild(canvas); $("qrDl").style.display="inline-block";
-    });
+    if(!u){ box.innerHTML='<div class="muted">Slug save karte hi yahan QR aa jayega.</div>'; return; }
+    const img=document.createElement("img");
+    img.src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data="+encodeURIComponent(u);
+    img.width=200; img.height=200; img.alt="QR";
+    img.style.cssText="background:#fff;padding:10px;border-radius:12px";
+    box.appendChild(img); $("qrDl").style.display="inline-block";
   }
   function downloadQR(){
-    const c=$("qrCanvas"); if(!c) return;
-    const a=document.createElement("a"); a.href=c.toDataURL("image/png"); a.download=(SLUG||"menu")+"-QR.png"; a.click();
+    const u=publicUrl(); if(!u) return;
+    window.open("https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=20&data="+encodeURIComponent(u), "_blank");
+    toast("QR nayi tab me khula — save/print kar lo");
   }
   window.saveSettings=saveSettings; window.copyLink=copyLink; window.downloadQR=downloadQR;
 
