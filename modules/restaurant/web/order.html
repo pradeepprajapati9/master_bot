@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order • Menu</title>
+  <style>
+    :root{ --bg:#0b0d12; --card:#151922; --line:#252b38; --txt:#e8eaf0; --mut:#8b93a7; --grn:#26c281; --blu:#4f7cff; --amb:#f5a623; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--txt); padding-bottom:120px; }
+    .top{ padding:22px; text-align:center; border-bottom:1px solid var(--line); }
+    .top h1{ margin:0; font-size:22px; } .top .st{ margin-top:6px; font-size:13px; }
+    .open{ color:var(--grn); } .closed{ color:var(--amb); }
+    .wrap{ max-width:560px; margin:0 auto; padding:16px; }
+    .cat{ color:var(--mut); font-size:12px; text-transform:uppercase; letter-spacing:.6px; margin:20px 0 8px; }
+    .item{ display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:10px; }
+    .item .nm{ font-weight:600; } .item .desc{ color:var(--mut); font-size:12px; margin-top:2px; } .item .pr{ color:var(--grn); font-weight:700; margin-top:4px; }
+    .qty{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .qty button{ width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:#0e1219; color:var(--txt); font-size:18px; cursor:pointer; }
+    .qty .n{ min-width:20px; text-align:center; font-weight:700; }
+    .cartbar{ position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--line); padding:14px 16px; }
+    .cartbar .in{ max-width:560px; margin:0 auto; }
+    .btn{ width:100%; padding:13px; border:none; border-radius:11px; background:var(--blu); color:#fff; font-weight:700; font-size:15px; cursor:pointer; }
+    .btn:disabled{ opacity:.5; }
+    .sheet{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:flex-end; z-index:10; }
+    .sheet.show{ display:flex; }
+    .sheetin{ background:var(--bg); border-top-left-radius:18px; border-top-right-radius:18px; width:100%; max-width:560px; margin:0 auto; padding:22px; max-height:88vh; overflow:auto; }
+    label{ display:block; font-size:12px; color:var(--mut); margin:12px 0 5px; }
+    input,textarea{ width:100%; padding:11px 12px; border-radius:9px; border:1px solid var(--line); background:#0e1219; color:var(--txt); font-size:15px; font-family:inherit; }
+    .line{ display:flex; justify-content:space-between; font-size:14px; padding:5px 0; }
+    .tot{ font-weight:800; font-size:17px; border-top:1px solid var(--line); margin-top:8px; padding-top:10px; }
+    .center{ min-height:80vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; }
+    .done{ font-size:60px; } .muted{ color:var(--mut); }
+  </style>
+</head>
+<body>
+  <div id="loadView" class="center"><div class="muted">Loading menu…</div></div>
+
+  <div id="shopView" style="display:none">
+    <div class="top">
+      <h1 id="rName">Restaurant</h1>
+      <div class="st" id="rStatus"></div>
+    </div>
+    <div class="wrap" id="menu"></div>
+    <div class="cartbar" id="cartbar" style="display:none">
+      <div class="in"><button class="btn" id="checkoutBtn" onclick="openSheet()"></button></div>
+    </div>
+  </div>
+
+  <!-- checkout sheet -->
+  <div class="sheet" id="sheet">
+    <div class="sheetin">
+      <h3 style="margin:0 0 4px">Your order</h3>
+      <div id="cartLines"></div>
+      <div class="line tot"><span>Total</span><span id="cartTotal"></span></div>
+      <label>Your name</label><input id="cName" placeholder="Name" />
+      <label>Phone</label><input id="cPhone" type="tel" placeholder="Mobile number" />
+      <label>Table no. / Address (optional)</label><input id="cTable" placeholder="Table 4 / delivery address" />
+      <label>Note (optional)</label><input id="cNote" placeholder="No onion, extra spicy…" />
+      <button class="btn" style="margin-top:18px" id="placeBtn" onclick="placeOrder()">Place order</button>
+      <button class="btn" style="background:none;color:var(--mut);margin-top:6px" onclick="closeSheet()">Cancel</button>
+    </div>
+  </div>
+
+  <div id="okView" class="center" style="display:none">
+    <div>
+      <div class="done">✅</div>
+      <h1>Order placed!</h1>
+      <p class="muted" id="okMsg">Restaurant ko aapka order mil gaya hai.</p>
+      <button class="btn" style="max-width:220px" onclick="location.reload()">Order again</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  const SUPABASE_URL = "https://wkuxhbyicpiqssqqnmkt.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdXhoYnlpY3BpcXNzcXFubWt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODYwNDAsImV4cCI6MjA5ODQ2MjA0MH0.tQF-0ClEVTxvzLYeTaaZbI4MOLkzHN0wdbyeBo0Spiw";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const $ = (id)=>document.getElementById(id);
+  const params = new URLSearchParams(location.search);
+  const SLUG = params.get("r");
+
+  let SHOP=null, CUR="₹", MENU=[], CART={};   // CART: id -> qty
+
+  (async function boot(){
+    if(!SLUG){ $("loadView").innerHTML='<div class="muted">Invalid link (no restaurant).</div>'; return; }
+    const { data: shop } = await sb.from("restaurant_settings").select("*").eq("slug",SLUG).maybeSingle();
+    if(!shop){ $("loadView").innerHTML='<div class="muted">Restaurant not found.</div>'; return; }
+    SHOP=shop; CUR=shop.currency||"₹";
+    $("rName").textContent=shop.name||"Menu";
+    if(shop.is_open===false){ $("rStatus").innerHTML='<span class="closed">● Abhi band hai (closed)</span>'; }
+    else { $("rStatus").innerHTML='<span class="open">● Open — order now</span>'; }
+
+    const { data: items } = await sb.from("menu_items").select("*").eq("user_id",shop.user_id).eq("available",true).order("sort").order("name");
+    MENU=items||[];
+    $("loadView").style.display="none"; $("shopView").style.display="block";
+    renderMenu();
+  })();
+  const money=(n)=> CUR+Number(n||0);
+
+  function renderMenu(){
+    if(!MENU.length){ $("menu").innerHTML='<div class="muted" style="text-align:center;padding:30px">Menu abhi khaali hai.</div>'; return; }
+    const cats={}; MENU.forEach(i=>{ (cats[i.category||"Menu"] ??= []).push(i); });
+    let html="";
+    for(const c in cats){
+      html+=`<div class="cat">${c}</div>`;
+      cats[c].forEach(it=>{
+        html+=`<div class="item"><div><div class="nm">${it.name}</div>
+          ${it.description?`<div class="desc">${it.description}</div>`:''}<div class="pr">${money(it.price)}</div></div>
+          <div class="qty">
+            <button onclick="chg('${it.id}',-1)">−</button>
+            <span class="n" id="n-${it.id}">0</span>
+            <button onclick="chg('${it.id}',1)">+</button>
+          </div></div>`;
+      });
+    }
+    $("menu").innerHTML=html;
+  }
+
+  function chg(id,d){
+    if(SHOP.is_open===false){ alert("Restaurant abhi band hai."); return; }
+    CART[id]=Math.max(0,(CART[id]||0)+d); if(!CART[id]) delete CART[id];
+    $("n-"+id).textContent=CART[id]||0;
+    updateBar();
+  }
+  window.chg=chg;
+  function itemsList(){ return Object.entries(CART).map(([id,qty])=>{ const m=MENU.find(x=>x.id===id); return {name:m.name, price:Number(m.price), qty}; }); }
+  function total(){ return itemsList().reduce((s,i)=>s+i.price*i.qty,0); }
+  function count(){ return Object.values(CART).reduce((a,b)=>a+b,0); }
+  function updateBar(){
+    const c=count();
+    $("cartbar").style.display=c?"block":"none";
+    $("checkoutBtn").textContent=`View cart · ${c} item${c>1?'s':''} · ${money(total())}`;
+  }
+
+  function openSheet(){
+    $("cartLines").innerHTML=itemsList().map(i=>`<div class="line"><span>${i.qty}× ${i.name}</span><span>${money(i.price*i.qty)}</span></div>`).join("");
+    $("cartTotal").textContent=money(total());
+    $("sheet").classList.add("show");
+  }
+  function closeSheet(){ $("sheet").classList.remove("show"); }
+  window.openSheet=openSheet; window.closeSheet=closeSheet;
+
+  async function placeOrder(){
+    const name=$("cName").value.trim(), phone=$("cPhone").value.trim();
+    if(!name || !phone){ alert("Naam aur phone daalo."); return; }
+    if(!count()){ alert("Cart khaali hai."); return; }
+    $("placeBtn").disabled=true; $("placeBtn").textContent="Placing…";
+    const row={ user_id:SHOP.user_id, customer_name:name, customer_phone:phone,
+      table_no:$("cTable").value.trim(), items:itemsList(), total:total(), note:$("cNote").value.trim(), status:"new" };
+    const { error } = await sb.from("orders").insert(row);
+    if(error){ alert("Error: "+error.message); $("placeBtn").disabled=false; $("placeBtn").textContent="Place order"; return; }
+    closeSheet(); $("shopView").style.display="none"; $("okView").style.display="flex";
+  }
+  window.placeOrder=placeOrder;
+  </script>
+</body>
+</html>

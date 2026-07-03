@@ -5,10 +5,16 @@ Har bot yahan ek folder banega. Ye sirf **kaam** karte hain — access control
 
 ```
 modules/
+├─ restaurant/  ← ✅ BANA + fully working (digital menu + ordering, sirf Supabase)
 ├─ reviews/     ← ✅ BANA (Google reviews auto-reply). Brain tested. Google API access baaki (R7)
 └─ youtube/     ← baad me youtube_bot yahan aayega — dekho MIGRATION.md
-   (aage: whatsapp/  missedcall/  restaurant/ ...)
+   (aage: whatsapp/  missedcall/ ...)
 ```
+
+### restaurant/ (fully working, abhi test ho sakta)
+- `web/index.html` — owner: settings + menu manager + live orders board
+- `web/order.html?r=<slug>` — public customer page (no login)
+- `schema.sql` — restaurant_settings / menu_items / orders + RLS
 
 ### reviews/ (kaam kar raha, Google access pending)
 - `ai_reply.py` — AI reply brain (tested ✓)  ·  `test_reply.py` — local test

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍔 Restaurant • Master Bot</title>
+  <style>
+    :root{ --bg:#0b0d12; --card:#151922; --line:#252b38; --txt:#e8eaf0; --mut:#8b93a7; --grn:#26c281; --red:#f0554b; --blu:#4f7cff; --amb:#f5a623; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--txt); }
+    header{ padding:16px 22px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:14px; }
+    header .logo{ font-weight:800; } header .logo span{ color:var(--blu); }
+    header a{ color:var(--mut); text-decoration:none; font-size:13px; }
+    header .who{ margin-left:auto; color:var(--mut); font-size:13px; }
+    .wrap{ max-width:860px; margin:0 auto; padding:22px; }
+    .tabs{ display:flex; gap:8px; margin-bottom:20px; }
+    .tabs button{ background:var(--card); border:1px solid var(--line); color:var(--mut); padding:9px 16px; border-radius:10px; cursor:pointer; font-weight:600; font-size:14px; }
+    .tabs button.active{ background:var(--blu); color:#fff; border-color:var(--blu); }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:16px; }
+    .card h3{ margin:0 0 14px; font-size:16px; }
+    label{ display:block; font-size:12px; color:var(--mut); margin:12px 0 5px; }
+    input,select,textarea{ width:100%; padding:10px 12px; border-radius:9px; border:1px solid var(--line); background:#0e1219; color:var(--txt); font-size:14px; font-family:inherit; }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; } .row > div{ flex:1; min-width:120px; }
+    .btn{ padding:10px 16px; border:none; border-radius:9px; background:var(--blu); color:#fff; font-weight:600; cursor:pointer; margin-top:14px; }
+    .btn.sm{ padding:6px 10px; margin:0; font-size:12px; }
+    .btn.ghost{ background:#0e1219; border:1px solid var(--line); color:var(--txt); }
+    .btn.red{ background:var(--red); } .btn.grn{ background:var(--grn); color:#04210f; }
+    .toggle{ display:flex; align-items:center; gap:9px; margin-top:14px; } .toggle input{ width:auto; }
+    .linkbox{ display:flex; gap:8px; margin-top:10px; align-items:center; }
+    .linkbox code{ background:#0e1219; border:1px solid var(--line); padding:8px 10px; border-radius:8px; font-size:12px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .item{ display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+    .item:last-child{ border:none; }
+    .item .nm{ font-weight:600; } .item .meta{ color:var(--mut); font-size:12px; }
+    .item .price{ margin-left:auto; font-weight:700; }
+    .pill{ padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; }
+    .pill.new{ background:rgba(79,124,255,.16); color:var(--blu); }
+    .pill.preparing{ background:rgba(245,166,35,.16); color:var(--amb); }
+    .pill.ready{ background:rgba(38,194,129,.16); color:var(--grn); }
+    .pill.done{ background:#20242e; color:var(--mut); }
+    .pill.cancelled{ background:rgba(240,85,75,.16); color:var(--red); }
+    .order{ border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px; }
+    .order .top{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .order .cust{ font-weight:700; } .order .time{ color:var(--mut); font-size:12px; margin-left:auto; }
+    .order .lines{ font-size:13px; color:var(--mut); } .order .tot{ font-weight:700; margin-top:6px; }
+    .order .acts{ display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+    .muted{ color:var(--mut); font-size:13px; }
+    .center{ min-height:70vh; display:flex; align-items:center; justify-content:center; text-align:center; }
+    .toast{ position:fixed; bottom:20px; right:20px; background:var(--grn); color:#04210f; padding:10px 16px; border-radius:9px; font-weight:600; opacity:0; transition:.2s; }
+    .toast.show{ opacity:1; }
+    .badge{ background:var(--red); color:#fff; border-radius:20px; padding:1px 7px; font-size:11px; margin-left:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🍔 Restaurant<span>Bot</span></div>
+    <a href="../../../user/">← Back to bots</a>
+    <div class="who" id="who"></div>
+  </header>
+
+  <div class="center" id="lockView" style="display:none">
+    <div class="card" style="max-width:360px">
+      <h3 id="lockTitle">🔒 Locked</h3>
+      <p class="muted" id="lockMsg"></p>
+      <a class="btn" href="../../../user/" style="display:inline-block;text-decoration:none">Go back</a>
+    </div>
+  </div>
+
+  <div class="wrap" id="mainView" style="display:none">
+    <div class="tabs">
+      <button id="tabOrders" class="active" onclick="tab('orders')">Orders <span class="badge" id="newCount" style="display:none">0</span></button>
+      <button id="tabMenu" onclick="tab('menu')">Menu</button>
+      <button id="tabSettings" onclick="tab('settings')">Settings</button>
+    </div>
+
+    <!-- ORDERS -->
+    <section id="ordersSec">
+      <div style="display:flex;align-items:center;margin-bottom:10px">
+        <h3 style="margin:0">Live orders</h3>
+        <button class="btn sm ghost" style="margin-left:auto" onclick="loadOrders()">↻ Refresh</button>
+      </div>
+      <div id="orders"><div class="muted">Loading…</div></div>
+    </section>
+
+    <!-- MENU -->
+    <section id="menuSec" style="display:none">
+      <div class="card">
+        <h3>Add menu item</h3>
+        <div class="row">
+          <div style="flex:2"><label>Item name</label><input id="mName" placeholder="Veg Burger" /></div>
+          <div><label>Price</label><input id="mPrice" type="number" placeholder="120" /></div>
+          <div><label>Category</label><input id="mCat" placeholder="Burgers" /></div>
+        </div>
+        <label>Description (optional)</label><input id="mDesc" placeholder="Crispy patty, cheese, lettuce" />
+        <button class="btn" onclick="addItem()">+ Add item</button>
+      </div>
+      <div class="card">
+        <h3>Your menu</h3>
+        <div id="menu"><div class="muted">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="settingsSec" style="display:none">
+      <div class="card">
+        <h3>Restaurant settings</h3>
+        <div class="row">
+          <div style="flex:2"><label>Restaurant name</label><input id="sName" placeholder="Sarvodaya Cafe" /></div>
+          <div><label>Currency</label><input id="sCur" value="₹" /></div>
+        </div>
+        <div class="row">
+          <div><label>Public link slug (order.html?r=…)</label><input id="sSlug" placeholder="sarvodaya-cafe" /></div>
+          <div><label>Phone</label><input id="sPhone" placeholder="9953…" /></div>
+        </div>
+        <div class="toggle"><input type="checkbox" id="sOpen" checked /><label for="sOpen" style="margin:0">Restaurant OPEN (orders le raha hai)</label></div>
+        <button class="btn" onclick="saveSettings()">Save settings</button>
+
+        <h3 style="margin-top:22px">Customer order link</h3>
+        <div class="muted">Ye link customers ko do (QR/WhatsApp/menu pe) — wo bina login order karenge:</div>
+        <div class="linkbox"><code id="publicLink">Save settings + slug first…</code><button class="btn sm" onclick="copyLink()">Copy</button></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  const SUPABASE_URL = "https://wkuxhbyicpiqssqqnmkt.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdXhoYnlpY3BpcXNzcXFubWt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODYwNDAsImV4cCI6MjA5ODQ2MjA0MH0.tQF-0ClEVTxvzLYeTaaZbI4MOLkzHN0wdbyeBo0Spiw";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const $ = (id)=>document.getElementById(id);
+  const today = ()=> new Date().toISOString().slice(0,10);
+  function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1500); }
+  function lock(t,m){ $("mainView").style.display="none"; $("lockTitle").textContent=t; $("lockMsg").textContent=m; $("lockView").style.display="flex"; }
+  const money = (n)=> (CUR||"₹")+Number(n||0);
+
+  let USER=null, CUR="₹", SLUG="";
+
+  function tab(t){
+    ["orders","menu","settings"].forEach(x=>{ $(x+"Sec").style.display = x===t?"block":"none"; $("tab"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active", x===t); });
+    if(t==="orders") loadOrders(); if(t==="menu") loadMenu();
+  }
+  window.tab = tab;
+
+  (async function boot(){
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){ location.replace("../../../user/"); return; }
+    const { data:{ user } } = await sb.auth.getUser(); USER=user; $("who").textContent=user.email;
+    const { data: prof } = await sb.from("profiles").select("status").eq("user_id",user.id).single();
+    if(!prof || prof.status!=="approved"){ lock("⏳ Not approved","Admin ne abhi approve nahi kiya."); return; }
+    const { data: acc } = await sb.from("module_access").select("allowed,expiry").eq("user_id",user.id).eq("module","restaurant").maybeSingle();
+    const expired = acc?.expiry && acc.expiry<today();
+    if(!acc || !acc.allowed || expired){ lock("🔒 Restaurant bot locked","Ye bot allowed nahi. Admin se baat karo."); return; }
+    $("mainView").style.display="block";
+    await loadSettings(); await loadOrders();
+    setInterval(loadOrders, 15000);   // auto-refresh orders every 15s
+  })();
+
+  /* ---------- settings ---------- */
+  async function loadSettings(){
+    const { data } = await sb.from("restaurant_settings").select("*").eq("user_id",USER.id).maybeSingle();
+    if(data){
+      $("sName").value=data.name||""; $("sCur").value=data.currency||"₹"; $("sSlug").value=data.slug||"";
+      $("sPhone").value=data.phone||""; $("sOpen").checked=data.is_open!==false;
+      CUR=data.currency||"₹"; SLUG=data.slug||"";
+    }
+    updateLink();
+  }
+  async function saveSettings(){
+    const slug=($("sSlug").value.trim()||$("sName").value.trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""));
+    const row={ user_id:USER.id, name:$("sName").value.trim(), currency:$("sCur").value.trim()||"₹",
+      slug, phone:$("sPhone").value.trim(), is_open:$("sOpen").checked, updated_at:new Date().toISOString() };
+    const { error } = await sb.from("restaurant_settings").upsert(row,{onConflict:"user_id"});
+    if(error){ toast(error.message.includes("duplicate")?"Slug already taken — koi aur chuno":("Error: "+error.message)); return; }
+    CUR=row.currency; SLUG=slug; $("sSlug").value=slug; updateLink(); toast("Settings saved ✓");
+  }
+  function publicUrl(){ return SLUG ? new URL(`order.html?r=${SLUG}`, location.href).href : ""; }
+  function updateLink(){ $("publicLink").textContent = publicUrl() || "Save settings + slug first…"; }
+  function copyLink(){ const u=publicUrl(); if(!u){toast("Pehle slug save karo");return;} navigator.clipboard.writeText(u); toast("Link copied ✓"); }
+  window.saveSettings=saveSettings; window.copyLink=copyLink;
+
+  /* ---------- menu ---------- */
+  async function addItem(){
+    const name=$("mName").value.trim(); if(!name){toast("Item name daalo");return;}
+    const row={ user_id:USER.id, name, price:Number($("mPrice").value||0), category:$("mCat").value.trim(), description:$("mDesc").value.trim(), available:true };
+    const { error } = await sb.from("menu_items").insert(row);
+    if(error){ toast("Error: "+error.message); return; }
+    $("mName").value=$("mPrice").value=$("mCat").value=$("mDesc").value=""; toast("Item added ✓"); loadMenu();
+  }
+  window.addItem=addItem;
+  async function loadMenu(){
+    const { data } = await sb.from("menu_items").select("*").eq("user_id",USER.id).order("created_at",{ascending:false});
+    if(!data || !data.length){ $("menu").innerHTML='<div class="muted">Abhi koi item nahi. Upar se add karo.</div>'; return; }
+    $("menu").innerHTML="";
+    data.forEach(it=>{
+      const d=document.createElement("div"); d.className="item";
+      d.innerHTML=`<div><div class="nm">${it.name} ${it.available?'':'<span class="muted">(hidden)</span>'}</div>
+        <div class="meta">${it.category||''}${it.description?' · '+it.description:''}</div></div>
+        <div class="price">${money(it.price)}</div>`;
+      const tgl=document.createElement("button"); tgl.className="btn sm ghost"; tgl.textContent=it.available?"Hide":"Show";
+      tgl.onclick=async()=>{ await sb.from("menu_items").update({available:!it.available}).eq("id",it.id); loadMenu(); };
+      const del=document.createElement("button"); del.className="btn sm red"; del.textContent="Delete";
+      del.onclick=async()=>{ if(confirm("Delete "+it.name+"?")){ await sb.from("menu_items").delete().eq("id",it.id); loadMenu(); } };
+      d.appendChild(tgl); d.appendChild(del); $("menu").appendChild(d);
+    });
+  }
+
+  /* ---------- orders ---------- */
+  const FLOW={ new:"preparing", preparing:"ready", ready:"done" };
+  const NEXTLBL={ new:"Accept ▶", preparing:"Ready ▶", ready:"Done ✓" };
+  async function loadOrders(){
+    const { data } = await sb.from("orders").select("*").eq("user_id",USER.id).order("created_at",{ascending:false}).limit(40);
+    const active=(data||[]).filter(o=>o.status==="new").length;
+    $("newCount").textContent=active; $("newCount").style.display=active?"inline-block":"none";
+    if(!data || !data.length){ $("orders").innerHTML='<div class="muted">Abhi koi order nahi. Customer order link se order aayega yahan (turant).</div>'; return; }
+    $("orders").innerHTML="";
+    data.forEach(o=>{
+      const div=document.createElement("div"); div.className="order";
+      const lines=(o.items||[]).map(i=>`${i.qty}× ${i.name}`).join(", ");
+      const t=new Date(o.created_at); const tm=t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      div.innerHTML=`<div class="top"><span class="cust">${o.customer_name||'Guest'}</span>
+        <span class="pill ${o.status}">${o.status}</span><span class="time">${tm}</span></div>
+        <div class="lines">${lines}${o.table_no?` · Table ${o.table_no}`:''}${o.customer_phone?` · 📞 ${o.customer_phone}`:''}</div>
+        ${o.note?`<div class="lines">📝 ${o.note}</div>`:''}
+        <div class="tot">${money(o.total)}</div>`;
+      const acts=document.createElement("div"); acts.className="acts";
+      if(FLOW[o.status]){
+        const nxt=document.createElement("button"); nxt.className="btn sm grn"; nxt.textContent=NEXTLBL[o.status];
+        nxt.onclick=async()=>{ await sb.from("orders").update({status:FLOW[o.status]}).eq("id",o.id); loadOrders(); };
+        acts.appendChild(nxt);
+      }
+      if(o.status!=="done" && o.status!=="cancelled"){
+        const cx=document.createElement("button"); cx.className="btn sm red"; cx.textContent="Cancel";
+        cx.onclick=async()=>{ await sb.from("orders").update({status:"cancelled"}).eq("id",o.id); loadOrders(); };
+        acts.appendChild(cx);
+      }
+      div.appendChild(acts); $("orders").appendChild(div);
+    });
+  }
+  window.loadOrders=loadOrders;
+  </script>
+</body>
+</html>
